@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+    	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    	http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+    	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	  	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd        
+    	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	 
+	<!--********************************************************************************-->
+	<!--********************************* Controllers **********************************-->
+	<!--********************************************************************************-->
+	
+	<!-- With this component-scan tag, Spring will automatically wire all objects with @controller annotations -->
+	<!-- Since we're doing a component scan here which includes services, we'll need to make this transactional annotation driven as well -->
+	
+ 	<tx:annotation-driven /> 
+ 	
+ 	<!-- Allows for @Controller validation  -->
+	<mvc:annotation-driven />
+ 		   
+    <context:component-scan base-package="com.mercury.finance"/>
+    
+ 	 	
+	<!--********************************************************************************-->
+	<!--******************************** View Resolvers ********************************-->
+	<!--********************************************************************************-->
+ 
+  	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+      	<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+      	<property name="prefix" value="/WEB-INF/pages/"/>
+      	<property name="suffix" value=".jsp"/>
+  	</bean>
+  	
+  	<bean id="baseSessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean" abstract="true">
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.OracleDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+ 				<prop key="hibernate.cache.use_second_level_cache">false</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+            </props>
+        </property>
+    </bean>
+            
+	<jee:jndi-lookup id="appDataSource" jndi-name="jdbc/myoracle" resource-ref="true" />	
+    <bean id="appSessionFactory" parent="baseSessionFactory">  
+        <property name="dataSource" ref="appDataSource" />
+        <property name="packagesToScan" value="com.mercury.finance.model"/>
+    </bean>
+    
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+	    <property name="userTransaction">
+	        <bean class="org.springframework.transaction.jta.JotmFactoryBean"/>
+	    </property>
+	</bean>
+    
+    <bean id="genericDao" class="com.mercury.common.db.HibernateDao" abstract="true" scope="prototype"/>
+ 	<bean id="traderDao" parent="genericDao" scope="prototype">
+		<constructor-arg value="com.mercury.finance.model.Trader" />
+    </bean>  
+    <bean id="transactionDao" parent="genericDao" scope="prototype">
+		<constructor-arg value="com.mercury.finance.model.Transaction" />
+    </bean> 
+	<bean id="loginDao" parent="genericDao" scope="prototype">
+		<constructor-arg value="com.mercury.finance.model.Login" />
+    </bean> 
+	<bean id="stockDao" parent="genericDao" scope="prototype">
+		<constructor-arg value="com.mercury.finance.model.Stock" />
+    </bean> 
+
+</beans>

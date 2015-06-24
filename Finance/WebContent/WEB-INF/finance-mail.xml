@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.gmail.com" />
+		<property name="port" value="465" />
+		<property name="username" value="mail.jpmcchase@gmail.com" />
+		<property name="password" value="mypassword1" />
+		<property name="javaMailProperties">
+			<props>
+           		<prop key="mail.smtp.auth">true</prop>
+           		<prop key="mail.smtp.starttls.enable">true</prop>
+           		<prop key="mail.smtp.port">465</prop>    
+                <prop key="mail.smtp.socketFactory.port">465</prop>    
+                <prop key="mail.smtp.socketFactory.fallback">false</prop>    
+                <prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+       		</props>
+		</property>
+	</bean>
+	
+	<bean id="mailApp" class="com.mercury.finance.mail.MailAppBean">
+		<property name="mailSender" ref="mailSender" />
+		<property name="simpleMailMessage" ref="customeMailMessage" />
+	</bean>
+ 
+	<bean id="customeMailMessage" class="org.springframework.mail.SimpleMailMessage">
+		<property name="from" value="YahooFinance@tradingsys.com" />
+		<property name="subject" value="Welcome to YFTS!" />
+		<property name="text">
+		<value>
+			<![CDATA[
+Dear %s,
+
+Welcome to Yahoo Finance Trading System! 
+
+Please click on the link below to confirm your email address:
+%s
+			]]>
+		</value>
+    </property>
+</bean>
+</beans>
